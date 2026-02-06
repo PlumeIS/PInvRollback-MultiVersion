@@ -6,7 +6,7 @@
     <parent>
         <groupId>cn.plumc.invrollback</groupId>
         <artifactId>PInvRollback</artifactId>
-        <version>1.2.7-SNAPSHOT</version>
+        <version>1.2.8-SNAPSHOT</version>
     </parent>
 
     <artifactId>PInvRollback-spigot-1.21.3</artifactId>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>cn.plumc.invrollback</groupId>
             <artifactId>PInvRollback-core</artifactId>
-            <version>1.2.7-SNAPSHOT</version>
+            <version>1.2.8-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

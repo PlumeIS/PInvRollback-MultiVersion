@@ -42,6 +42,8 @@ public class ViewUI extends ChestUI{
     private Mode mode;
 
     private int handSlot;
+    private HashMap<String, ItemStack> viewInventoryData;
+    private HashMap<String, ItemStack> viewEnderChestData;
     private HashMap<String, ItemStack> inventoryData;
     private HashMap<String, ItemStack> enderChestData;
 
@@ -49,6 +51,8 @@ public class ViewUI extends ChestUI{
         super(parent, player, 54, Config.i18n("ui.view.title"));
         opened.put(player.getUniqueId(), this);
         mode = Mode.INVENTORY;
+        viewInventoryData = new HashMap<>();
+        viewEnderChestData = new HashMap<>();
         init();
         Bukkit.getScheduler().runTaskAsynchronously(PInvRollback.instance, ()->{
             profile = PInvRollback.rollbackManager.read(id);
@@ -65,25 +69,25 @@ public class ViewUI extends ChestUI{
 
         if (player.hasPermission("commands.pinvrollback.ui.fetch")){
             for (Map.Entry<String, ItemStack> itemStackEntry : ImmutableMap.copyOf(inventoryData).entrySet()) {
-                getFetchableItem(itemStackEntry, inventoryData);
+                getFetchableItem(itemStackEntry, viewInventoryData);
             }
-            for (Map.Entry<String, ItemStack> itemStackEntry : enderChestData.entrySet()) {
-                getFetchableItem(itemStackEntry, enderChestData);
+            for (Map.Entry<String, ItemStack> itemStackEntry : ImmutableMap.copyOf(enderChestData).entrySet()) {
+                getFetchableItem(itemStackEntry, viewEnderChestData);
             }
         }
 
         super.init();
     }
 
-    private void getFetchableItem(Map.Entry<String, ItemStack> itemStackEntry, HashMap<String, ItemStack> enderChestData) {
-        ItemStack itemStack = itemStackEntry.getValue();
+    private void getFetchableItem(Map.Entry<String, ItemStack> itemStackEntry, HashMap<String, ItemStack> chestData) {
+        ItemStack itemStack = itemStackEntry.getValue().clone();
         ItemMeta itemMeta = itemStack.getItemMeta();
         List<String> lore = itemMeta.getLore() == null ? new ArrayList<>() : itemMeta.getLore();
         lore.add("");
         lore.add(Config.i18n("ui.view.fetch"));
         itemMeta.setLore(lore);
         itemStack.setItemMeta(itemMeta);
-        enderChestData.put(itemStackEntry.getKey(), itemStack);
+        chestData.put(itemStackEntry.getKey(), itemStack);
     }
 
     @Override
@@ -152,21 +156,21 @@ public class ViewUI extends ChestUI{
         nullItemMeta.setDisplayName(Config.i18n("ui.view.item.null"));
         nullItem.setItemMeta(nullItemMeta);
 
-        inventory.setItem(OFF_HAND, inventoryData.getOrDefault("off_hand", nullItem));
-        inventory.setItem(HELMET, inventoryData.getOrDefault("helmet", nullItem));
-        inventory.setItem(CHESTPLATE, inventoryData.getOrDefault("chestplate", nullItem));
-        inventory.setItem(LEGGINGS, inventoryData.getOrDefault("leggings", nullItem));
-        inventory.setItem(BOOTS, inventoryData.getOrDefault("boots", nullItem));
+        inventory.setItem(OFF_HAND, viewInventoryData.getOrDefault("off_hand", nullItem));
+        inventory.setItem(HELMET, viewInventoryData.getOrDefault("helmet", nullItem));
+        inventory.setItem(CHESTPLATE, viewInventoryData.getOrDefault("chestplate", nullItem));
+        inventory.setItem(LEGGINGS, viewInventoryData.getOrDefault("leggings", nullItem));
+        inventory.setItem(BOOTS, viewInventoryData.getOrDefault("boots", nullItem));
 
         if (mode == Mode.INVENTORY){
-            for (Map.Entry<String, ItemStack> itemStackEntry : inventoryData.entrySet()) {
+            for (Map.Entry<String, ItemStack> itemStackEntry : viewInventoryData.entrySet()) {
                 if (NumberUtils.isDigits(itemStackEntry.getKey())) {
                     Integer inventoryIndex = NumberUtils.createInteger(itemStackEntry.getKey());
                     inventory.setItem(inventoryIndex+18, itemStackEntry.getValue());
                 }
             }
         } else {
-            for (Map.Entry<String, ItemStack> itemStackEntry : enderChestData.entrySet()) {
+            for (Map.Entry<String, ItemStack> itemStackEntry : viewEnderChestData.entrySet()) {
                 if (NumberUtils.isDigits(itemStackEntry.getKey())) {
                     Integer inventoryIndex = NumberUtils.createInteger(itemStackEntry.getKey());
                     inventory.setItem(inventoryIndex+18, itemStackEntry.getValue());
