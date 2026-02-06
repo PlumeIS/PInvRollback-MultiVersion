@@ -1,0 +1,39 @@
+name: PInvRollback
+version: '1.2.4'
+main: cn.plumc.invrollback.PInvRollback
+api-version: '1.20'
+authors: [ PlumeIS ]
+description: Crate Player Inventory snapshot.
+prefix: PInvRollBack
+
+commands:
+  pinvrollback:
+    description: Main command of PInvRollBack
+    usage: /<command> [create/rollback/ui/list] (player) (type/id) (message/reason)
+    permission: commands.pinvrollback
+    aliases:
+      - pinv
+      - invrollback
+      - invrb
+
+permissions:
+  commands.pinvrollback:
+    default: true
+  commands.pinvrollback.create:
+    default: op
+  commands.pinvrollback.create.other:
+    default: op
+  commands.pinvrollback.rollback:
+    default: op
+  commands.pinvrollback.rollback.other:
+    default: op
+  commands.pinvrollback.list:
+    default: true
+  commands.pinvrollback.list.other:
+    default: op
+  commands.pinvrollback.ui:
+    default: true
+  commands.pinvrollback.ui.other:
+    default: op
+  commands.pinvrollback.ui.fetch:
+    default: op

@@ -1,0 +1,10 @@
+maxSaves:
+  manual: 64
+  join: 32
+  quit: 32
+  death: 64
+  worldChange: 32
+  rollback: 32
+
+command:
+  page_lines: 5
