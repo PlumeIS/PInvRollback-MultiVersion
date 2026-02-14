@@ -9,14 +9,12 @@ import org.bukkit.event.HandlerList;
 
 public class PInvRollbackStartEvent extends Event implements Cancellable {
     private static final HandlerList HANDLER_LIST = new HandlerList();
-
-    private boolean cancelled;
-
     private final Player player;
     private final String type;
     private final String reason;
     private final long time;
     private final long id;
+    private boolean cancelled;
 
     public PInvRollbackStartEvent(RollbackProfile profile) {
         this.player = Bukkit.getPlayer(profile.player);
@@ -24,6 +22,10 @@ public class PInvRollbackStartEvent extends Event implements Cancellable {
         this.reason = profile.message;
         this.time = profile.time;
         this.id = profile.id;
+    }
+
+    public static HandlerList getHandlerList() {
+        return HANDLER_LIST;
     }
 
     public Player getPlayer() {
@@ -48,10 +50,6 @@ public class PInvRollbackStartEvent extends Event implements Cancellable {
 
     @Override
     public HandlerList getHandlers() {
-        return HANDLER_LIST;
-    }
-
-    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 

@@ -15,23 +15,6 @@ import org.bukkit.inventory.ItemStack;
 import java.io.IOException;
 
 public class NMSHandlerImpl implements NMSHandler {
-    public byte[] serializeItem(ItemStack item) {
-        Preconditions.checkNotNull(item, "null cannot be serialized");
-        Preconditions.checkArgument(item.getType() != Material.AIR, "air cannot be serialized");
-
-        return serializeNbtToBytes((CompoundTag) CraftItemStack.asNMSCopy(item).save(MinecraftServer.getServer().registryAccess()));
-    }
-
-    public ItemStack deserializeItem(byte[] data) {
-        Preconditions.checkNotNull(data, "null cannot be deserialized");
-        Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
-
-        CompoundTag compound = deserializeNbtFromBytes(data);
-        final int dataVersion = compound.getInt("DataVersion");
-        compound = (CompoundTag) MinecraftServer.getServer().fixerUpper.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, compound), dataVersion, Bukkit.getUnsafe().getDataVersion()).getValue();
-        return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.parse(MinecraftServer.getServer().registryAccess(), compound).orElseThrow());
-    }
-
     private static byte[] serializeNbtToBytes(CompoundTag compound) {
         compound.putInt("DataVersion", Bukkit.getUnsafe().getDataVersion());
         java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
@@ -57,5 +40,22 @@ public class NMSHandlerImpl implements NMSHandler {
         }
         int dataVersion = compound.getInt("DataVersion");
         return compound;
+    }
+
+    public byte[] serializeItem(ItemStack item) {
+        Preconditions.checkNotNull(item, "null cannot be serialized");
+        Preconditions.checkArgument(item.getType() != Material.AIR, "air cannot be serialized");
+
+        return serializeNbtToBytes((CompoundTag) CraftItemStack.asNMSCopy(item).save(MinecraftServer.getServer().registryAccess()));
+    }
+
+    public ItemStack deserializeItem(byte[] data) {
+        Preconditions.checkNotNull(data, "null cannot be deserialized");
+        Preconditions.checkArgument(data.length > 0, "cannot deserialize nothing");
+
+        CompoundTag compound = deserializeNbtFromBytes(data);
+        final int dataVersion = compound.getInt("DataVersion");
+        compound = (CompoundTag) MinecraftServer.getServer().fixerUpper.update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, compound), dataVersion, Bukkit.getUnsafe().getDataVersion()).getValue();
+        return CraftItemStack.asCraftMirror(net.minecraft.world.item.ItemStack.parse(MinecraftServer.getServer().registryAccess(), compound).orElseThrow());
     }
 }

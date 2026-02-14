@@ -17,7 +17,7 @@ public class InventoryListener implements Listener {
             event.setCancelled(true);
             ChestUI ui = ChestUI.getUI(player, event.getClickedInventory());
             if (ui == null) return;
-            ui.onClick(event.getClick() ,event.getAction() ,event.getSlot());
+            ui.onClick(event.getClick(), event.getAction(), event.getSlot());
         }
     }
 

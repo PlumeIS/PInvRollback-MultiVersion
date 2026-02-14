@@ -5,6 +5,7 @@ import cn.plumc.invrollback.PInvRollback;
 import cn.plumc.invrollback.RollbackManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -20,29 +21,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-public class RollbackUI extends ChestUI{
-    public static HashMap<UUID, RollbackUI> opened = new HashMap<>();
-
+public class RollbackUI extends ChestUI {
     private static final int PLAYER_HEAD = 4;
     private static final int FILTER = 49;
     private static final int PAGE_PREV = 45;
     private static final int PAGE_NEXT = 53;
-
     private static final int VIEW_PRE_PAGE = 36;
-
+    public static HashMap<UUID, RollbackUI> opened = new HashMap<>();
+    private final UUID target;
+    private final boolean online;
     private int page = 0;
-
     private List<RollbackManager.ProfileView> views;
     private List<String> filters;
     private String filterType;
     private int viewStart;
 
-    private final UUID target;
-
-    public RollbackUI(Player player, UUID target) {
+    public RollbackUI(Player player, UUID target, boolean online) {
         super(player, 54, Config.i18n("ui.rollback.title"));
         this.target = target;
+        this.online = online;
         init();
+    }
+
+    public static void open(Player player, UUID target, boolean online) {
+        new RollbackUI(player, target, online).open();
+    }
+
+    public static RollbackUI get(Player player, Inventory inventory) {
+        if (isPlayerOpen(player.getUniqueId(), inventory)) {
+            return opened.get(player.getUniqueId());
+        }
+        return null;
     }
 
     @Override
@@ -56,7 +65,7 @@ public class RollbackUI extends ChestUI{
 
     @Override
     public void update() {
-        List<RollbackManager.ProfileView> filtered = views.stream().filter(profileView -> profileView.type().equals(filterType)||filterType.equals(Config.i18n("type.all"))).toList();
+        List<RollbackManager.ProfileView> filtered = views.stream().filter(profileView -> profileView.type().equals(filterType) || filterType.equals(Config.i18n("type.all"))).toList();
         int size = filtered.size();
 
         int maxPages;
@@ -65,7 +74,7 @@ public class RollbackUI extends ChestUI{
         } else {
             maxPages = size / VIEW_PRE_PAGE + 1;
         }
-        maxPages-=1;
+        maxPages -= 1;
 
         viewStart = page * VIEW_PRE_PAGE;
         int viewEnd = Math.min((page + 1) * VIEW_PRE_PAGE, size - 1);
@@ -85,7 +94,7 @@ public class RollbackUI extends ChestUI{
                     Config.i18n("ui.rollback.view.message").formatted("".equals(view.message()) ? Config.i18n("view.message.null") : view.message()),
                     ""
             ));
-            if (player.hasPermission("commands.pinvrollback.rollback")){
+            if (player.hasPermission("commands.pinvrollback.rollback")) {
                 lore.add(Config.i18n("ui.rollback.view.tip"));
             } else lore.add(Config.i18n("ui.confirm.view.tip"));
             meta.setLore(lore);
@@ -107,8 +116,9 @@ public class RollbackUI extends ChestUI{
 
         ItemStack playerHead = new ItemStack(Material.PLAYER_HEAD);
         SkullMeta headMetal = (SkullMeta) playerHead.getItemMeta();
-        headMetal.setOwningPlayer(Bukkit.getOfflinePlayer(target));
-        headMetal.setDisplayName(Config.i18n("ui.rollback.player").formatted(player.getName()));
+        OfflinePlayer target = Bukkit.getOfflinePlayer(this.target);
+        headMetal.setOwningPlayer(target);
+        headMetal.setDisplayName(Config.i18n("ui.rollback.player").formatted(target.getName()));
         headMetal.setLore(List.of(
                 Config.i18n("ui.rollback.player.count").formatted(views.size()),
                 Config.i18n("ui.rollback.player.new_date").formatted(filtered.getFirst() == null ? Config.i18n("view.message.null") : format.format(filtered.getFirst().date()))
@@ -120,7 +130,7 @@ public class RollbackUI extends ChestUI{
         ItemMeta filterMeta = filter.getItemMeta();
         filterMeta.setDisplayName(Config.i18n("ui.rollback.filter"));
         List<String> filterComponents = new ArrayList<>();
-        for (String f: filters){
+        for (String f : filters) {
             if (f.equals(filterType)) filterComponents.add("§f" + f);
             else filterComponents.add("§8" + f);
         }
@@ -130,14 +140,16 @@ public class RollbackUI extends ChestUI{
 
         ItemStack pagePrev = new ItemStack(Material.ARROW);
         ItemMeta pagePrevMeta = pagePrev.getItemMeta();
-        if (page==0) pagePrevMeta.setDisplayName(Config.i18n("ui.rollback.previous.disabled").formatted(page + 1, maxPages + 1));
+        if (page == 0)
+            pagePrevMeta.setDisplayName(Config.i18n("ui.rollback.previous.disabled").formatted(page + 1, maxPages + 1));
         else pagePrevMeta.setDisplayName(Config.i18n("ui.rollback.previous").formatted(page + 1, maxPages + 1));
         pagePrev.setItemMeta(pagePrevMeta);
         inventory.setItem(PAGE_PREV, pagePrev);
 
         ItemStack pageNext = new ItemStack(Material.ARROW);
         ItemMeta pageNextMeta = pageNext.getItemMeta();
-        if (page==maxPages) pageNextMeta.setDisplayName(Config.i18n("ui.rollback.next.disabled").formatted(page + 1, maxPages + 1));
+        if (page == maxPages)
+            pageNextMeta.setDisplayName(Config.i18n("ui.rollback.next.disabled").formatted(page + 1, maxPages + 1));
         else pageNextMeta.setDisplayName(Config.i18n("ui.rollback.next").formatted(page + 1, maxPages + 1));
         pageNext.setItemMeta(pageNextMeta);
         inventory.setItem(PAGE_NEXT, pageNext);
@@ -145,7 +157,7 @@ public class RollbackUI extends ChestUI{
 
     @Override
     public void onClick(ClickType clickType, InventoryAction action, int slot) {
-        List<RollbackManager.ProfileView> filtered = views.stream().filter(profileView -> profileView.type().equals(filterType)||filterType.equals(Config.i18n("type.all"))).toList();
+        List<RollbackManager.ProfileView> filtered = views.stream().filter(profileView -> profileView.type().equals(filterType) || filterType.equals(Config.i18n("type.all"))).toList();
         int size = filtered.size();
 
         int maxPages;
@@ -155,41 +167,51 @@ public class RollbackUI extends ChestUI{
             maxPages = size / VIEW_PRE_PAGE + 1;
         }
 
-        if (slot==PAGE_PREV){
-            if (page>0) page--;
+        if (slot == PAGE_PREV) {
+            if (page > 0) page--;
             player.playSound(player, Sound.ITEM_BOOK_PAGE_TURN, 0.5F, 1F);
             update();
             return;
         }
-        if (slot==PAGE_NEXT){
-            if (page<maxPages-1) page++;
+        if (slot == PAGE_NEXT) {
+            if (page < maxPages - 1) page++;
             player.playSound(player, Sound.ITEM_BOOK_PAGE_TURN, 0.5F, 1F);
             update();
             return;
         }
-        if (slot==FILTER){
+        if (slot == FILTER) {
             int i = filters.indexOf(filterType);
             i++;
-            if (i>filters.size()-1) i = 0;
+            if (i > filters.size() - 1) i = 0;
             filterType = filters.get(i);
             page = 0;
             player.playSound(player, Sound.BLOCK_DISPENSER_FAIL, 0.3F, 1F);
             update();
             return;
         }
-        if (9<=slot&&slot<=44){
+        if (9 <= slot && slot <= 44) {
             int i = slot + viewStart - 9;
             RollbackManager.ProfileView view = filtered.get(i);
-            if (clickType == ClickType.LEFT){
-                ViewUI viewUI = new ViewUI(this, player, view.id());
+            if (clickType == ClickType.LEFT) {
+                ViewUI viewUI = new ViewUI(this, player, view.id(), online);
                 player.playSound(player, Sound.BLOCK_CHEST_OPEN, 0.3F, 1F);
-                Bukkit.getScheduler().runTask(PInvRollback.instance, ()->{onClose();viewUI.open();});
+                Bukkit.getScheduler().runTask(PInvRollback.instance, () -> {
+                    onClose();
+                    viewUI.open();
+                });
                 return;
             }
             if (clickType == ClickType.RIGHT && player.hasPermission("commands.pinvrollback.rollback")) {
-                ConfirmUI confirmUI = new ConfirmUI(this, player, view.id());
+                if (!online) {
+                    player.sendMessage(Config.i18n("command.player.offline"));
+                    return;
+                }
+                ConfirmUI confirmUI = new ConfirmUI(this, player, view.id(), true);
                 player.playSound(player, Sound.BLOCK_CHEST_OPEN, 0.3F, 1F);
-                Bukkit.getScheduler().runTask(PInvRollback.instance, ()->{onClose();confirmUI.open();});
+                Bukkit.getScheduler().runTask(PInvRollback.instance, () -> {
+                    onClose();
+                    confirmUI.open();
+                });
                 return;
             }
         }
@@ -205,16 +227,5 @@ public class RollbackUI extends ChestUI{
     public void open() {
         super.open();
         opened.put(player.getUniqueId(), this);
-    }
-
-    public static void open(Player player, UUID target){
-        new RollbackUI(player, target).open();
-    }
-
-    public static RollbackUI get(Player player, Inventory inventory){
-        if (isPlayerOpen(player.getUniqueId(), inventory)) {
-            return opened.get(player.getUniqueId());
-        }
-        return null;
     }
 }

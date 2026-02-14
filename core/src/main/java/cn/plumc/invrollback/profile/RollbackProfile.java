@@ -4,7 +4,6 @@ import cn.plumc.invrollback.PInvRollback;
 import com.google.gson.JsonObject;
 import org.bukkit.entity.Player;
 
-import java.util.Optional;
 import java.util.UUID;
 
 public class RollbackProfile {
@@ -26,7 +25,7 @@ public class RollbackProfile {
         this.enderChest = enderChest;
     }
 
-    public RollbackProfile(JsonObject rollbackProfile){
+    public RollbackProfile(JsonObject rollbackProfile) {
         this.player = UUID.fromString(rollbackProfile.get("player").getAsString());
         this.type = rollbackProfile.get("type").getAsString();
         this.message = rollbackProfile.get("message").getAsString();
@@ -36,12 +35,24 @@ public class RollbackProfile {
         this.enderChest = EnderChestProfile.read(rollbackProfile.get("enderChest").getAsJsonObject());
     }
 
-    public void rollback(Player serverPlayer){
+    public static RollbackProfile getLoading() {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("player", "c1d3dcd0-5125-4910-9ac0-0b738ad39d5c");
+        jsonObject.addProperty("type", "loading");
+        jsonObject.addProperty("message", "loading");
+        jsonObject.addProperty("time", System.currentTimeMillis());
+        jsonObject.addProperty("id", 0);
+        jsonObject.add("inventory", new JsonObject());
+        jsonObject.add("enderChest", new JsonObject());
+        return new RollbackProfile(jsonObject);
+    }
+
+    public void rollback(Player serverPlayer) {
         inventory.rollback(serverPlayer.getInventory());
         enderChest.rollback(serverPlayer.getEnderChest());
     }
 
-    public JsonObject serialize(){
+    public JsonObject serialize() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("player", player.toString());
         jsonObject.addProperty("type", type);
@@ -56,17 +67,5 @@ public class RollbackProfile {
     @Override
     public String toString() {
         return "RollbackProfile[player=%s id=%s type=%s message=%s time=%s]".formatted(player.toString(), id, type, message, time);
-    }
-
-    public static RollbackProfile getLoading(){
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("player", "c1d3dcd0-5125-4910-9ac0-0b738ad39d5c");
-        jsonObject.addProperty("type", "loading");
-        jsonObject.addProperty("message", "loading");
-        jsonObject.addProperty("time", System.currentTimeMillis());
-        jsonObject.addProperty("id", 0);
-        jsonObject.add("inventory", new JsonObject());
-        jsonObject.add("enderChest", new JsonObject());
-        return new RollbackProfile(jsonObject);
     }
 }

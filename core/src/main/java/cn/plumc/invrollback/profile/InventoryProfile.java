@@ -1,11 +1,8 @@
 package cn.plumc.invrollback.profile;
 
 import cn.plumc.invrollback.nms.NMSUtils;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -36,7 +33,7 @@ public class InventoryProfile {
         this.mainInventory = mainInventory;
     }
 
-    public static InventoryProfile parse(PlayerInventory inventory){
+    public static InventoryProfile parse(PlayerInventory inventory) {
         JsonObject helmet = getItemAsJson(inventory.getHelmet());
         JsonObject chestplate = getItemAsJson(inventory.getChestplate());
         JsonObject leggings = getItemAsJson(inventory.getLeggings());
@@ -46,25 +43,25 @@ public class InventoryProfile {
         JsonObject mainInventory = new JsonObject();
         for (int i = 0; i < 36; i++) {
             JsonObject item = getItemAsJson(inventory.getItem(i));
-            if (item!=null) mainInventory.add(String.valueOf(i), item);
+            if (item != null) mainInventory.add(String.valueOf(i), item);
         }
         return new InventoryProfile(helmet, chestplate, leggings, boots, offHand, inventory.getHeldItemSlot(), mainInventory);
     }
 
-    public static JsonObject getItemAsJson(ItemStack item){
-        if (item == null || item.getType()== Material.AIR) return null;
+    public static JsonObject getItemAsJson(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) return null;
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("item", item.getType().getKey().toString());
         jsonObject.addProperty("nbt", new String(Base64.getEncoder().encode(NMSUtils.getNMSHandler().serializeItem(item)), StandardCharsets.UTF_8));
         return jsonObject;
     }
 
-    public static ItemStack getItemFromJson(JsonObject jsonObject){
+    public static ItemStack getItemFromJson(JsonObject jsonObject) {
         if (jsonObject == null) return null;
         return NMSUtils.getNMSHandler().deserializeItem(Base64.getDecoder().decode(jsonObject.get("nbt").getAsString()));
     }
 
-    public static InventoryProfile read(JsonObject inventory){
+    public static InventoryProfile read(JsonObject inventory) {
         return new InventoryProfile(inventory.getAsJsonObject("helmet"),
                 inventory.getAsJsonObject("chestplate"),
                 inventory.getAsJsonObject("leggings"),
@@ -74,25 +71,25 @@ public class InventoryProfile {
                 inventory.get("mainInventory") == null ? new JsonObject() : inventory.get("mainInventory").getAsJsonObject());
     }
 
-    public JsonObject serialize(){
+    public JsonObject serialize() {
         JsonObject jsonObject = new JsonObject();
-        if (helmet!=null) jsonObject.add("helmet", helmet);
-        if (chestplate!=null) jsonObject.add("chestplate", chestplate);
-        if (leggings!=null) jsonObject.add("leggings", leggings);
-        if (boots!=null) jsonObject.add("boots", boots);
-        if (offHand!=null) jsonObject.add("offHand", offHand);
+        if (helmet != null) jsonObject.add("helmet", helmet);
+        if (chestplate != null) jsonObject.add("chestplate", chestplate);
+        if (leggings != null) jsonObject.add("leggings", leggings);
+        if (boots != null) jsonObject.add("boots", boots);
+        if (offHand != null) jsonObject.add("offHand", offHand);
         jsonObject.addProperty("handSlot", handSlot);
         jsonObject.add("mainInventory", mainInventory);
         return jsonObject;
     }
 
-    public void rollback(PlayerInventory inventory){
+    public void rollback(PlayerInventory inventory) {
         inventory.clear();
-        if (helmet!=null) inventory.setHelmet(getItemFromJson(helmet));
-        if (chestplate!=null) inventory.setChestplate(getItemFromJson(chestplate));
-        if (leggings!=null) inventory.setLeggings(getItemFromJson(leggings));
-        if (boots!=null) inventory.setBoots(getItemFromJson(boots));
-        if (offHand!=null) inventory.setItemInOffHand(getItemFromJson(offHand));
+        if (helmet != null) inventory.setHelmet(getItemFromJson(helmet));
+        if (chestplate != null) inventory.setChestplate(getItemFromJson(chestplate));
+        if (leggings != null) inventory.setLeggings(getItemFromJson(leggings));
+        if (boots != null) inventory.setBoots(getItemFromJson(boots));
+        if (offHand != null) inventory.setItemInOffHand(getItemFromJson(offHand));
         inventory.setHeldItemSlot(handSlot);
         for (Map.Entry<String, JsonElement> itemJson : mainInventory.entrySet()) {
             int slot = Integer.parseInt(itemJson.getKey());
@@ -113,7 +110,7 @@ public class InventoryProfile {
         return inventory;
     }
 
-    public int getHandSlot(){
+    public int getHandSlot() {
         return handSlot;
     }
 }

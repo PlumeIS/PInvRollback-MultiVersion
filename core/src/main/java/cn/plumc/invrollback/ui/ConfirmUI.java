@@ -5,7 +5,6 @@ import cn.plumc.invrollback.PInvRollback;
 import cn.plumc.invrollback.profile.RollbackProfile;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -30,15 +29,24 @@ public class ConfirmUI extends ChestUI {
 
     private RollbackProfile profile = RollbackProfile.getLoading();
     private boolean loaded = false;
+    private boolean online;
 
-    public ConfirmUI(ChestUI parent, Player player, long id) {
+    public ConfirmUI(ChestUI parent, Player player, long id, boolean online) {
         super(parent, player, 54, Config.i18n("ui.confirm.title"));
+        this.online = online;
         init();
-        Bukkit.getScheduler().runTaskAsynchronously(PInvRollback.instance, ()->{
+        Bukkit.getScheduler().runTaskAsynchronously(PInvRollback.instance, () -> {
             profile = PInvRollback.rollbackManager.read(id);
             loaded = true;
             update();
         });
+    }
+
+    public static ConfirmUI get(Player player, Inventory inventory) {
+        if (isPlayerOpen(player.getUniqueId(), inventory)) {
+            return opened.get(player.getUniqueId());
+        }
+        return null;
     }
 
     @Override
@@ -48,11 +56,11 @@ public class ConfirmUI extends ChestUI {
         SimpleDateFormat format = new SimpleDateFormat("MM/dd HH:mm:ss");
         meta.setDisplayName(Config.i18n("ui.rollback.view.type").formatted(profile.type));
         meta.setLore(List.of(
-                Config.i18n("ui.rollback.view.id").formatted(profile.id),
-                Config.i18n("ui.rollback.view.date").formatted(format.format(new Date(profile.time))),
-                Config.i18n("ui.rollback.view.message").formatted("".equals(profile.message) ? Config.i18n("view.message.null") : profile.message),
-                "",
-                Config.i18n("ui.confirm.view.tip")
+                        Config.i18n("ui.rollback.view.id").formatted(profile.id),
+                        Config.i18n("ui.rollback.view.date").formatted(format.format(new Date(profile.time))),
+                        Config.i18n("ui.rollback.view.message").formatted("".equals(profile.message) ? Config.i18n("view.message.null") : profile.message),
+                        "",
+                        Config.i18n("ui.confirm.view.tip")
                 )
         );
         viewItem.setItemMeta(meta);
@@ -82,25 +90,30 @@ public class ConfirmUI extends ChestUI {
     public void onClick(ClickType clickType, InventoryAction action, int slot) {
         if (slot == BACK || slot == REJECT) {
             player.playSound(player.getLocation(), Sound.BLOCK_CHEST_CLOSE, 0.3F, 1F);
-            Bukkit.getScheduler().runTask(PInvRollback.instance, ()-> {onClose();parent.open();});
+            Bukkit.getScheduler().runTask(PInvRollback.instance, () -> {
+                onClose();
+                parent.open();
+            });
         }
         if (!loaded) return;
         if (slot == VIEW) {
-            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(profile.player);
-            if (offlinePlayer.isOnline()) {
-                ViewUI viewUI = new ViewUI(this, player, profile.id);
-                player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.3F, 1F);
-                Bukkit.getScheduler().runTask(PInvRollback.instance, ()->{onClose();viewUI.open();});
-            } else {
-                player.sendMessage(Config.i18n("command.player.offline"));
-            }
+            ViewUI viewUI = new ViewUI(this, player, profile.id, online);
+            player.playSound(player.getLocation(), Sound.BLOCK_CHEST_OPEN, 0.3F, 1F);
+            Bukkit.getScheduler().runTask(PInvRollback.instance, () -> {
+                onClose();
+                viewUI.open();
+            });
             return;
         }
         if (slot == ACCEPT) {
+            if (!online) {
+                player.sendMessage(Config.i18n("command.player.offline"));
+                return;
+            }
             PInvRollback.rollbackManager.rollback(player, profile, "");
             player.sendMessage(Config.i18n("command.rollback.success"));
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.3F, 1F);
-            Bukkit.getScheduler().runTask(PInvRollback.instance, ()->player.closeInventory());
+            Bukkit.getScheduler().runTask(PInvRollback.instance, () -> player.closeInventory());
             return;
         }
     }
@@ -115,12 +128,5 @@ public class ConfirmUI extends ChestUI {
     public void onClose() {
         super.onClose();
         opened.remove(player.getUniqueId());
-    }
-
-    public static ConfirmUI get(Player player, Inventory inventory){
-        if (isPlayerOpen(player.getUniqueId(), inventory)) {
-            return opened.get(player.getUniqueId());
-        }
-        return null;
     }
 }

@@ -3,7 +3,6 @@ package cn.plumc.invrollback.listeners;
 import cn.plumc.invrollback.Config;
 import cn.plumc.invrollback.RollbackManager;
 import cn.plumc.invrollback.events.PInvRollbackShouldSaveEvent;
-import cn.plumc.invrollback.profile.InventoryProfile;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

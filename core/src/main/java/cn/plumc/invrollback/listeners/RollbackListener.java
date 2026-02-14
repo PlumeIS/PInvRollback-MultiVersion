@@ -10,8 +10,10 @@ import org.bukkit.event.Listener;
 public class RollbackListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onRollbackSaving(PInvRollbackShouldSaveEvent event) {
-        if (event.isCancelled()) {return;}
-        Bukkit.getScheduler().runTaskAsynchronously(PInvRollback.instance, ()->{
+        if (event.isCancelled()) {
+            return;
+        }
+        Bukkit.getScheduler().runTaskAsynchronously(PInvRollback.instance, () -> {
             PInvRollback.rollbackManager.create(event);
         });
     }

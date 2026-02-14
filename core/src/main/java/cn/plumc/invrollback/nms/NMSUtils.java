@@ -14,7 +14,7 @@ public class NMSUtils {
 
     private static String minecraftVersion;
 
-    private static boolean isRunOnPaper(){
+    private static boolean isRunOnPaper() {
         try {
             Class.forName("com.destroystokyo.paper.Namespaced");
             return true;
@@ -45,7 +45,7 @@ public class NMSUtils {
     @SuppressWarnings("unchecked")
     private static Class<? extends NMSHandler> getNMSHandlerClazz() throws RuntimeException, ClassNotFoundException {
         String clazzName;
-        if (isRunOnPaper()){
+        if (isRunOnPaper()) {
             clazzName = "cn.plumc.invrollback.nms.paper.NMSHandlerImpl";
         } else {
             clazzName = "cn.plumc.invrollback.nms.v" + getMinecraftVersion()
@@ -54,7 +54,7 @@ public class NMSUtils {
 
         try {
             return (Class<? extends NMSHandler>) Class.forName(clazzName);
-        } catch (ClassNotFoundException e){
+        } catch (ClassNotFoundException e) {
             PInvRollback.instance.getLogger().warning("Could not match current version:" + getMinecraftVersion());
             PInvRollback.instance.getLogger().warning("Try using the latest version:" + LAST_VERSION);
             return (Class<? extends NMSHandler>) Class.forName("cn.plumc.invrollback.nms.v" + LAST_VERSION

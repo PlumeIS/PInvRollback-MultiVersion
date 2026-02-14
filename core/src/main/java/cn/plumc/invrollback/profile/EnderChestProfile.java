@@ -18,26 +18,26 @@ public class EnderChestProfile {
         this.enderChest = enderChest;
     }
 
-    public static EnderChestProfile parse(Inventory inventory){
+    public static EnderChestProfile parse(Inventory inventory) {
         JsonObject enderChest = new JsonObject();
         for (int i = 0; i < 27; i++) {
             JsonObject item = getItemAsJson(inventory.getItem(i));
-            if (item!=null) enderChest.add(String.valueOf(i), item);
+            if (item != null) enderChest.add(String.valueOf(i), item);
         }
         return new EnderChestProfile(enderChest);
     }
 
-    public static EnderChestProfile read(JsonObject inventory){
+    public static EnderChestProfile read(JsonObject inventory) {
         return new EnderChestProfile(inventory.getAsJsonObject("enderChest") == null ? new JsonObject() : inventory.getAsJsonObject("enderChest"));
     }
 
-    public JsonObject serialize(){
+    public JsonObject serialize() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.add("enderChest", enderChest);
         return jsonObject;
     }
 
-    public void rollback(Inventory inventory){
+    public void rollback(Inventory inventory) {
         inventory.clear();
         for (Map.Entry<String, JsonElement> itemJson : enderChest.entrySet()) {
             int slot = Integer.parseInt(itemJson.getKey());

@@ -28,38 +28,42 @@ public abstract class ChestUI {
         this.inventory = Bukkit.createInventory(player, size, title);
     }
 
-    public void init(){
+    public static boolean isPlayerOpen(UUID player, Inventory inventory) {
+        return players.containsKey(player) && players.get(player).equals(inventory);
+    }
+
+    public static ChestUI getUI(Player player, Inventory inventory) {
+        ChestUI ui;
+        if ((ui = RollbackUI.get(player, inventory)) != null) return ui;
+        if ((ui = ConfirmUI.get(player, inventory)) != null) return ui;
+        if ((ui = ViewUI.get(player, inventory)) != null) return ui;
+        return null;
+    }
+
+    public void init() {
         update();
     }
 
-    public void update(){}
+    public void update() {
+    }
 
-    public void open(){
+    public void open() {
         player.openInventory(inventory);
         player.updateInventory();
         players.put(player.getUniqueId(), inventory);
     }
 
-    public void onClick(ClickType clickType, InventoryAction action, int slot){}
+    public void onClick(ClickType clickType, InventoryAction action, int slot) {
+    }
 
-    public void onClose(){
+    public void onClose() {
         players.remove(player.getUniqueId());
-        Bukkit.getScheduler().runTask(PInvRollback.instance, ()->{if (hasParent() && parent != null) parent.open();});
+        Bukkit.getScheduler().runTask(PInvRollback.instance, () -> {
+            if (hasParent() && parent != null) parent.open();
+        });
     }
 
-    public boolean hasParent(){
+    public boolean hasParent() {
         return false;
-    }
-
-    public static boolean isPlayerOpen(UUID player, Inventory inventory){
-        return players.containsKey(player) && players.get(player).equals(inventory);
-    }
-
-    public static ChestUI getUI(Player player, Inventory inventory){
-        ChestUI ui;
-        if ((ui = RollbackUI.get(player, inventory))!=null) return ui;
-        if ((ui = ConfirmUI.get(player, inventory))!=null) return ui;
-        if ((ui = ViewUI.get(player, inventory))!=null) return ui;
-        return null;
     }
 }

@@ -18,7 +18,7 @@ public class PInvRollbackShouldSaveEvent extends Event implements Cancellable {
     private final int maxProfiles;
     private boolean cached;
     private InventoryProfile inventoryProfile;
-    private EnderChestProfile  enderChestProfile;
+    private EnderChestProfile enderChestProfile;
 
     private boolean cancelled;
 
@@ -32,7 +32,11 @@ public class PInvRollbackShouldSaveEvent extends Event implements Cancellable {
         this.enderChestProfile = null;
     }
 
-    public void cacheProfile(){
+    public static HandlerList getHandlerList() {
+        return HANDLER_LIST;
+    }
+
+    public void cacheProfile() {
         this.cached = true;
         this.inventoryProfile = InventoryProfile.parse(player.getInventory());
         this.enderChestProfile = EnderChestProfile.parse(player.getEnderChest());
@@ -68,10 +72,6 @@ public class PInvRollbackShouldSaveEvent extends Event implements Cancellable {
 
     @Override
     public HandlerList getHandlers() {
-        return HANDLER_LIST;
-    }
-
-    public static HandlerList getHandlerList() {
         return HANDLER_LIST;
     }
 

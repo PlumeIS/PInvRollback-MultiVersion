@@ -1,7 +1,6 @@
 package cn.plumc.invrollback;
 
 import cn.plumc.invrollback.events.PInvRollbackShouldSaveEvent;
-import cn.plumc.invrollback.events.PInvRollbackStartEvent;
 import cn.plumc.invrollback.profile.EnderChestProfile;
 import cn.plumc.invrollback.profile.InventoryProfile;
 import cn.plumc.invrollback.profile.RollbackProfile;
@@ -19,45 +18,20 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 public class RollbackManager {
-    public static class DefaultType{
-        public static final String MANUAL = Config.i18n("type.manual");
-        public static final String JOIN = Config.i18n("type.join");
-        public static final String QUIT = Config.i18n("type.quit");
-        public static final String DEATH = Config.i18n("type.death");
-        public static final String WORLD_CHANGE = Config.i18n("type.worldChange");
-        public static final String ROLLBACK = Config.i18n("type.rollback");
-    }
-
     private final static String CONFIG_PATH = "profile.json";
     private final static String PROFILE_PATH = "profiles";
-
-    public record ProfileView(long id, UUID playerUUID, String player, String type, String message, long time, Date date){
-        public JsonObject serialize(){
-            JsonObject view = new JsonObject();
-            view.addProperty("id", id);
-            view.addProperty("uuid", playerUUID.toString());
-            view.addProperty("player", player);
-            view.addProperty("type", type);
-            view.addProperty("message", message);
-            view.addProperty("time", time);
-            return view;
-        }
-    }
-
-    private JsonObject config = null;
-    private Path dataPath = null;
-
     private final HashMap<UUID, List<ProfileView>> views = new HashMap<>();
     private final HashMap<UUID, HashMap<String, Integer>> counters = new HashMap<>();
-
+    private JsonObject config = null;
+    private Path dataPath = null;
     private long lastId = 0;
 
-    public long getNewId(){
+    public long getNewId() {
         lastId++;
         return lastId;
     }
 
-    public void load(Path dataPath){
+    public void load(Path dataPath) {
         this.dataPath = dataPath;
         Path configPath = dataPath.resolve(CONFIG_PATH);
         File configFile = configPath.toFile();
@@ -95,7 +69,7 @@ public class RollbackManager {
         }
     }
 
-    public void save(Path dataPath){
+    public void save(Path dataPath) {
         Path configPath = dataPath.resolve(CONFIG_PATH);
         File configFile = configPath.toFile();
         PInvRollback.instance.saveResource("profile.json", false);
@@ -131,23 +105,23 @@ public class RollbackManager {
         return create(player, type, message, maxProfile, inventoryProfile, enderChestProfile);
     }
 
-    public long create(Player player, String type, String message, int maxProfile, InventoryProfile inventoryProfile, EnderChestProfile enderChestProfile){
+    public long create(Player player, String type, String message, int maxProfile, InventoryProfile inventoryProfile, EnderChestProfile enderChestProfile) {
         UUID uuid = player.getUniqueId();
 
         HashMap<String, Integer> counter = counters.get(uuid);
-        if (counter==null){
+        if (counter == null) {
             counters.put(uuid, new HashMap<>());
             counter = counters.get(uuid);
         }
 
-        if (!counter.containsKey(type)){
+        if (!counter.containsKey(type)) {
             counter.put(type, 0);
         }
 
-        if (counter.get(type) >= maxProfile){
+        if (counter.get(type) >= maxProfile) {
             List<ProfileView> profileViews = views.get(uuid);
             ProfileView last = profileViews.stream().min(Comparator.comparingLong(ProfileView::time)).orElse(null);
-            if (last!=null) remove(last.id);
+            if (last != null) remove(last.id);
         }
         counter.put(type, counter.get(type) + 1);
         RollbackProfile profile = new RollbackProfile(player, type, message, inventoryProfile, enderChestProfile);
@@ -157,7 +131,9 @@ public class RollbackManager {
         views.get(uuid).add(new ProfileView(profile.id, player.getUniqueId(), player.getName(), profile.type, profile.message, profile.time, new Date(profile.time)));
         try {
             Path playerProfilePath = dataPath.resolve(PROFILE_PATH).resolve(uuid.toString());
-            if (!playerProfilePath.toFile().exists()){ playerProfilePath.toFile().mkdirs(); }
+            if (!playerProfilePath.toFile().exists()) {
+                playerProfilePath.toFile().mkdirs();
+            }
 
             JsonObject serialize = profile.serialize();
             Gson gson = new Gson();
@@ -172,7 +148,7 @@ public class RollbackManager {
             profilePathFile.setWritable(true);
 
             final byte[] bytes = new byte[512];
-            try(OutputStream out = new BufferedOutputStream(new FileOutputStream(profilePathFile))){
+            try (OutputStream out = new BufferedOutputStream(new FileOutputStream(profilePathFile))) {
                 while (!deflater.finished()) {
                     int length = deflater.deflate(bytes);
                     out.write(bytes, 0, length);
@@ -185,7 +161,7 @@ public class RollbackManager {
         return profile.id;
     }
 
-    public RollbackProfile read(long id){
+    public RollbackProfile read(long id) {
         ProfileView view = null;
         for (List<ProfileView> profileViews : views.values()) {
             for (ProfileView profileView : profileViews) {
@@ -200,9 +176,9 @@ public class RollbackManager {
         Inflater inflater = new Inflater();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream(512);
 
-        try (InputStream in = new BufferedInputStream(new FileInputStream(filePath.toFile()))){
+        try (InputStream in = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
             byte[] tempbytes = new byte[in.available()];
-            for (int i = 0; (i = in.read(tempbytes)) != -1;) {
+            for (int i = 0; (i = in.read(tempbytes)) != -1; ) {
                 inflater.setInput(tempbytes, 0, i);
             }
             final byte[] bytes = new byte[512];
@@ -222,7 +198,7 @@ public class RollbackManager {
         return new RollbackProfile(json);
     }
 
-    public void remove(long id){
+    public void remove(long id) {
         UUID uuid = null;
         ProfileView view = null;
         for (Map.Entry<UUID, List<ProfileView>> profileViews : views.entrySet()) {
@@ -243,10 +219,10 @@ public class RollbackManager {
         if (view != null) views.get(uuid).remove(view);
     }
 
-    public void rollback(Player player, long id, String reason){
-        Bukkit.getScheduler().runTaskAsynchronously(PInvRollback.instance, ()->{
+    public void rollback(Player player, long id, String reason) {
+        Bukkit.getScheduler().runTaskAsynchronously(PInvRollback.instance, () -> {
             RollbackProfile rollbackProfile = read(id);
-            Bukkit.getScheduler().runTask(PInvRollback.instance, ()-> {
+            Bukkit.getScheduler().runTask(PInvRollback.instance, () -> {
                 PInvRollbackShouldSaveEvent saveEvent = new PInvRollbackShouldSaveEvent(player, DefaultType.ROLLBACK, reason, Config.maxCount("rollback"));
                 Bukkit.getPluginManager().callEvent(saveEvent);
                 if (saveEvent.isCancelled()) return;
@@ -256,7 +232,7 @@ public class RollbackManager {
         });
     }
 
-    public void rollback(Player player, RollbackProfile profile, String reason){
+    public void rollback(Player player, RollbackProfile profile, String reason) {
         PInvRollbackShouldSaveEvent saveEvent = new PInvRollbackShouldSaveEvent(player, DefaultType.ROLLBACK, reason, Config.maxCount("rollback"));
         Bukkit.getPluginManager().callEvent(saveEvent);
         if (saveEvent.isCancelled()) return;
@@ -264,11 +240,11 @@ public class RollbackManager {
         profile.rollback(player);
     }
 
-    public List<ProfileView> getSortedViews(UUID uuid){
+    public List<ProfileView> getSortedViews(UUID uuid) {
         return views.get(uuid).stream().sorted(Comparator.comparing(ProfileView::time, Comparator.reverseOrder())).toList();
     }
 
-    public UUID getOwner(long id){
+    public UUID getOwner(long id) {
         for (Map.Entry<UUID, List<ProfileView>> profileViews : views.entrySet()) {
             UUID uuid = profileViews.getKey();
             for (ProfileView profileView : profileViews.getValue()) {
@@ -276,10 +252,11 @@ public class RollbackManager {
                     return uuid;
                 }
             }
-        } return null;
+        }
+        return null;
     }
 
-    public List<Long> getActiveId(){
+    public List<Long> getActiveId() {
         List<Long> activeIds = new ArrayList<>();
         for (List<ProfileView> profileViews : views.values()) {
             for (ProfileView profileView : profileViews) {
@@ -289,7 +266,7 @@ public class RollbackManager {
         return activeIds;
     }
 
-    public List<String> getTypes(UUID uuid){
+    public List<String> getTypes(UUID uuid) {
         List<String> types = new ArrayList<>();
         if (counters.containsKey(uuid)) {
             types.addAll(counters.get(uuid).keySet());
@@ -297,7 +274,32 @@ public class RollbackManager {
         return types;
     }
 
-    public void importProfile(){}
+    public void importProfile() {
+    }
 
-    public void exportProfile(){}
+    public void exportProfile() {
+    }
+
+    public static class DefaultType {
+        public static final String MANUAL = Config.i18n("type.manual");
+        public static final String JOIN = Config.i18n("type.join");
+        public static final String QUIT = Config.i18n("type.quit");
+        public static final String DEATH = Config.i18n("type.death");
+        public static final String WORLD_CHANGE = Config.i18n("type.worldChange");
+        public static final String ROLLBACK = Config.i18n("type.rollback");
+    }
+
+    public record ProfileView(long id, UUID playerUUID, String player, String type, String message, long time,
+                              Date date) {
+        public JsonObject serialize() {
+            JsonObject view = new JsonObject();
+            view.addProperty("id", id);
+            view.addProperty("uuid", playerUUID.toString());
+            view.addProperty("player", player);
+            view.addProperty("type", type);
+            view.addProperty("message", message);
+            view.addProperty("time", time);
+            return view;
+        }
+    }
 }
