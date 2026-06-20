@@ -7,7 +7,7 @@
     <parent>
         <groupId>cn.plumc.invrollback</groupId>
         <artifactId>PInvRollback</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
+        <version>1.3.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>PInvRollback-paper</artifactId>
@@ -72,7 +72,7 @@
         <dependency>
             <groupId>cn.plumc.invrollback</groupId>
             <artifactId>PInvRollback-core</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
+            <version>1.3.1-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

@@ -230,7 +230,7 @@ public class PInvRollbackCommand implements TabExecutor {
         List<String> players = Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
         List<String> ids = PInvRollback.rollbackManager.getActiveId().stream().map(String::valueOf).toList();
         if (args.length == 1) return subCommands;
-        switch (args[0]) {
+        switch (args[0].toLowerCase()) {
             case "create": {
                 if (args.length == 2) return new ArrayList<>();
                 if (args.length == 3 && sender.hasPermission("commands.pinvrollback.create.other")) return players;
@@ -256,6 +256,9 @@ public class PInvRollbackCommand implements TabExecutor {
                     return page;
                 }
                 if (args.length == 3 && sender.hasPermission("commands.pinvrollback.list.other")) return players;
+            }
+            case "ui": {
+                if (args.length == 2 && sender.hasPermission("commands.pinvrollback.ui.other")) return players;
             }
         }
         return new ArrayList<>();
