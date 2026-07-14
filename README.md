@@ -1,5 +1,7 @@
 # PInvRollback
 
+[中文文档](README_zh.md)
+
 PInvRollback is a Minecraft plugin designed to help server administrators manage and rollback player inventories and ender chests safely. It supports multiple server versions (Spigot/Paper).
 
 ## Features

@@ -241,7 +241,7 @@ public class RollbackManager {
     }
 
     public List<ProfileView> getSortedViews(UUID uuid) {
-        return views.get(uuid).stream().sorted(Comparator.comparing(ProfileView::time, Comparator.reverseOrder())).toList();
+        return views.getOrDefault(uuid, new ArrayList<>()).stream().sorted(Comparator.comparing(ProfileView::time, Comparator.reverseOrder())).toList();
     }
 
     public UUID getOwner(long id) {
