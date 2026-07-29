@@ -47,11 +47,11 @@ public class PInvRollbackShouldSaveEvent extends Event implements Cancellable {
     }
 
     public Optional<EnderChestProfile> getEnderChestProfile() {
-        return Optional.of(enderChestProfile);
+        return Optional.ofNullable(enderChestProfile);
     }
 
     public Optional<InventoryProfile> getInventoryProfile() {
-        return Optional.of(inventoryProfile);
+        return Optional.ofNullable(inventoryProfile);
     }
 
     public Player getPlayer() {

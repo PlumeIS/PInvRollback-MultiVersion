@@ -8,6 +8,7 @@ import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.inventory.Inventory;
 
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.UUID;
 
 public abstract class ChestUI {
@@ -32,12 +33,12 @@ public abstract class ChestUI {
         return players.containsKey(player) && players.get(player).equals(inventory);
     }
 
-    public static ChestUI getUI(Player player, Inventory inventory) {
+    public static Optional<ChestUI> getUI(Player player, Inventory inventory) {
         ChestUI ui;
-        if ((ui = RollbackUI.get(player, inventory)) != null) return ui;
-        if ((ui = ConfirmUI.get(player, inventory)) != null) return ui;
-        if ((ui = ViewUI.get(player, inventory)) != null) return ui;
-        return null;
+        if ((ui = RollbackUI.get(player, inventory)) != null) return Optional.of(ui);
+        if ((ui = ConfirmUI.get(player, inventory)) != null) return Optional.of(ui);
+        if ((ui = ViewUI.get(player, inventory)) != null) return Optional.of(ui);
+        return Optional.empty();
     }
 
     public void init() {
@@ -51,6 +52,11 @@ public abstract class ChestUI {
         player.openInventory(inventory);
         player.updateInventory();
         players.put(player.getUniqueId(), inventory);
+    }
+
+    public void close(){
+        Bukkit.getScheduler().runTask(PInvRollback.instance, () -> player.closeInventory());
+        players.remove(player.getUniqueId());
     }
 
     public void onClick(ClickType clickType, InventoryAction action, int slot) {
