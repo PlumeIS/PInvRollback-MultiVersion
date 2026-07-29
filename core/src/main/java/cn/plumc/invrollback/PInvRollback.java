@@ -9,10 +9,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+
 public final class PInvRollback extends JavaPlugin {
 
     public static PInvRollback instance;
     public static RollbackManager rollbackManager;
+
+    public void saveResourceIfNotExists(String resourceName) {
+        File targetFile = new File(getDataFolder(), resourceName);
+        if (!targetFile.exists()) {
+            saveResource(resourceName, false);
+        }
+    }
 
     @Override
     public void onEnable() {
@@ -20,7 +29,7 @@ public final class PInvRollback extends JavaPlugin {
 
         rollbackManager = new RollbackManager();
         rollbackManager.load(getDataFolder().toPath());
-        saveResource("messages.yml", false);
+        saveResourceIfNotExists("messages.yml");
         saveDefaultConfig();
         Config.load();
 
