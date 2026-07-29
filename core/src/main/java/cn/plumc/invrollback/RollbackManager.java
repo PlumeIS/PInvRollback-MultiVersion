@@ -35,7 +35,7 @@ public class RollbackManager {
         this.dataPath = dataPath;
         Path configPath = dataPath.resolve(CONFIG_PATH);
         File configFile = configPath.toFile();
-        PInvRollback.instance.saveResource("profile.json", false);
+        PInvRollback.instance.saveResourceIfNotExists("profile.json");
         try {
             config = JsonParser.parseReader(new FileReader(configFile)).getAsJsonObject();
         } catch (FileNotFoundException e) {
@@ -72,7 +72,7 @@ public class RollbackManager {
     public void save(Path dataPath) {
         Path configPath = dataPath.resolve(CONFIG_PATH);
         File configFile = configPath.toFile();
-        PInvRollback.instance.saveResource("profile.json", false);
+        PInvRollback.instance.saveResourceIfNotExists("profile.json");
         Gson gson = new Gson();
         JsonArray jsonArray = new JsonArray();
         for (List<ProfileView> profileViews : views.values()) {
