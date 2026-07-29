@@ -191,6 +191,7 @@ public class RollbackUI extends ChestUI {
         }
         if (9 <= slot && slot <= 44) {
             int i = slot + viewStart - 9;
+            if (i >= filtered.size()) return;
             RollbackManager.ProfileView view = filtered.get(i);
             if (clickType == ClickType.LEFT) {
                 ViewUI viewUI = new ViewUI(this, player, view.id(), online);
