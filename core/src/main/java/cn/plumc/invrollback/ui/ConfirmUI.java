@@ -113,9 +113,15 @@ public class ConfirmUI extends ChestUI {
             PInvRollback.rollbackManager.rollback(player, profile, "");
             player.sendMessage(Config.i18n("command.rollback.success"));
             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 0.3F, 1F);
-            Bukkit.getScheduler().runTask(PInvRollback.instance, () -> player.closeInventory());
+            close();
             return;
         }
+    }
+
+    @Override
+    public void close() {
+        super.close();
+        opened.remove(player.getUniqueId());
     }
 
     @Override
