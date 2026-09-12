@@ -114,7 +114,8 @@ public class ViewUI extends ChestUI {
         headMetal.setOwningPlayer(Bukkit.getOfflinePlayer(profile.player));
         headMetal.setDisplayName(Config.i18n("ui.rollback.player").formatted(Bukkit.getOfflinePlayer(profile.player).getName()));
         headMetal.setLore(List.of(
-                Config.i18n("ui.view.player.date").formatted(format.format(new Date(profile.time)))
+                Config.i18n("ui.view.player.date").formatted(format.format(new Date(profile.time))),
+                Config.i18n("ui.view.player.loc").formatted(profile.world, profile.pos[0], profile.pos[1], profile.pos[2])
         ));
         playerHead.setItemMeta(headMetal);
         inventory.setItem(PLAYER, playerHead);

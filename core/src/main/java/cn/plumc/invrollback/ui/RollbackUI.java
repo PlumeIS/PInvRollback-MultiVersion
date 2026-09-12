@@ -91,6 +91,7 @@ public class RollbackUI extends ChestUI {
             List<String> lore = new ArrayList<>(List.of(
                     Config.i18n("ui.rollback.view.id").formatted(view.id()),
                     Config.i18n("ui.rollback.view.date").formatted(format.format(view.date())),
+                    Config.i18n("ui.rollback.view.loc").formatted(view.world(), view.pos()[0], view.pos()[1], view.pos()[2]),
                     Config.i18n("ui.rollback.view.message").formatted("".equals(view.message()) ? Config.i18n("view.message.null") : view.message()),
                     ""
             ));
