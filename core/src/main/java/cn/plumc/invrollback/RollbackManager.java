@@ -13,6 +13,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -52,9 +53,20 @@ public class RollbackManager {
             long id = jsonObject.get("id").getAsLong();
             long time = jsonObject.get("time").getAsLong();
             String player = jsonObject.get("player").getAsString();
+            JsonArray posArray = jsonObject.getAsJsonArray("pos");
+            double[] pos;
+            String world;
+            if (Objects.nonNull(posArray)) { // 1.3.5 loc
+               pos = new double[]{posArray.get(0).getAsDouble(), posArray.get(1).getAsDouble(), posArray.get(2).getAsDouble()};
+               world = jsonObject.get("world").getAsString();
+            } else {
+                pos = new double[]{0.0, 0.0, 0.0};
+                world = "world";
+            }
+
             String type = jsonObject.get("type").getAsString();
             String message = jsonObject.get("message").getAsString();
-            views.get(uuid).add(new ProfileView(id, uuid, player, type, message, time, new Date(time)));
+            views.get(uuid).add(new ProfileView(id, uuid, player, pos, world, type, message, time, new Date(time)));
         }
         for (Map.Entry<String, JsonElement> entry : config.getAsJsonObject("counters").entrySet()) {
             UUID uuid = UUID.fromString(entry.getKey());
@@ -128,7 +140,7 @@ public class RollbackManager {
         if (!views.containsKey(uuid)) {
             views.put(uuid, new ArrayList<>());
         }
-        views.get(uuid).add(new ProfileView(profile.id, player.getUniqueId(), player.getName(), profile.type, profile.message, profile.time, new Date(profile.time)));
+        views.get(uuid).add(new ProfileView(profile.id, player.getUniqueId(), player.getName(), profile.pos, profile.world ,profile.type, profile.message, profile.time, new Date(profile.time)));
         try {
             Path playerProfilePath = dataPath.resolve(PROFILE_PATH).resolve(uuid.toString());
             if (!playerProfilePath.toFile().exists()) {
@@ -289,13 +301,15 @@ public class RollbackManager {
         public static final String ROLLBACK = Config.i18n("type.rollback");
     }
 
-    public record ProfileView(long id, UUID playerUUID, String player, String type, String message, long time,
+    public record ProfileView(long id, UUID playerUUID, String player, double[] pos, String world ,String type, String message, long time,
                               Date date) {
         public JsonObject serialize() {
             JsonObject view = new JsonObject();
             view.addProperty("id", id);
             view.addProperty("uuid", playerUUID.toString());
             view.addProperty("player", player);
+            view.add("pos", new Gson().toJsonTree(pos));
+            view.addProperty("world", world);
             view.addProperty("type", type);
             view.addProperty("message", message);
             view.addProperty("time", time);
